@@ -7,13 +7,13 @@ from django.contrib.messages import constants as messages
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ─── Chave Secreta ─────────────────────────────────────────────────
-SECRET_KEY = config('SECRET_KEY', default='unsafe-key')  # Busca da variável de ambiente ou valor padrão inseguro para dev
+SECRET_KEY = config('DJANGO_SECRET_KEY', default='unsafe-key')  # Nome da variável atualizado para DJANGO_SECRET_KEY
 
 # ─── Modo Debug ────────────────────────────────────────────────────
-DEBUG = config('DEBUG', default=False, cast=bool)  # Configuração booleana para debug
+DEBUG = config('DEBUG', default=False, cast=bool)
 
 # ─── Hosts Permitidos ──────────────────────────────────────────────
-ALLOWED_HOSTS = ['*']  # Em produção, especifique domínios reais
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*').split(',')  # Permite configurar múltiplos hosts via env
 
 # ─── Aplicações Registradas ────────────────────────────────────────
 INSTALLED_APPS = [
@@ -40,6 +40,7 @@ INSTALLED_APPS = [
 # ─── Middlewares ───────────────────────────────────────────────────
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # WhiteNoise para servir arquivos estáticos
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',  # Proteção CSRF
@@ -50,8 +51,6 @@ MIDDLEWARE = [
 
 # ─── URL Principal ─────────────────────────────────────────────────
 ROOT_URLCONF = 'qrp_cliniseg.urls'
-
-# ...
 
 TEMPLATES = [
     {
@@ -65,7 +64,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
 
-                'painel.context_processors.empresa_slug',  # <<< Aqui!
+                'painel.context_processors.empresa_slug',  # Context processor customizado
             ],
         },
     },
@@ -98,13 +97,16 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = 'pt-br'
 TIME_ZONE = 'America/Sao_Paulo'
 USE_I18N = True
-USE_L10N = True
+USE_L10N = True  # OBS: Depreciado no Django 5.2, mas pode ficar
 USE_TZ = True
 
 # ─── Arquivos Estáticos ────────────────────────────────────────────
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / "static"]  # Pasta para arquivos estáticos no desenvolvimento
-STATIC_ROOT = BASE_DIR / "staticfiles"   # Pasta para coletar arquivos estáticos na produção
+STATICFILES_DIRS = [BASE_DIR / "static"]  # Para arquivos estáticos locais (dev)
+STATIC_ROOT = BASE_DIR / "staticfiles"   # Para coletar os estáticos na produção
+
+# Configuração WhiteNoise para arquivos estáticos
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # ─── Arquivos de Mídia ─────────────────────────────────────────────
 MEDIA_URL = '/media/'

@@ -17,5 +17,5 @@ six==1.17.0
 sqlparse==0.5.3
 typing_extensions==4.14.1
 tzdata==2025.2
-gunicorn
-whitenoise
+whitenoise==6.9.0
+gunicorn==23.0.0
