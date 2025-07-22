@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Relatórios - Painel CLINISEG{% endblock %}
+
+{% block content %}
+<!-- 🔰 Cabeçalho -->
+<div class="text-center mb-4">
+    <h2 class="text-dark"><i class="bi bi-graph-up"></i> Relatórios Gerenciais</h2>
+    <p class="lead text-muted mb-1">
+        Visualize diagnósticos técnicos por fator de risco e acompanhe o panorama geral por empresa.
+    </p>
+</div>
+
+<!-- 🔽 Dropdown de seleção da empresa -->
+<form method="get" class="mb-4 text-center">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <select name="empresa_slug" class="form-select" onchange="this.form.submit()">
+                <option disabled {% if not empresa or not empresa.slug %}selected{% endif %}>
+                    🔽 Selecione uma empresa
+                </option>
+                {% for emp in empresas %}
+                    <option value="{{ emp.slug }}" {% if empresa and emp.slug == empresa.slug %}selected{% endif %}>
+                        {{ emp.nome }} – CNPJ {{ emp.cnpj }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+</form>
+
+<!-- 🔍 DEBUG: lista de empresas recebidas -->
+{% if empresas %}
+<div class="text-start text-muted mb-4"
+     style="font-size: 14px; background: #f8f9fa; border-left: 4px solid #0d6efd; padding: 10px 15px;">
+    <strong>Empresas carregadas:</strong><br>
+    {% for emp in empresas %}
+        • {{ emp.nome }} (slug: {{ emp.slug }})<br>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-warning text-center">⚠️ Nenhuma empresa disponível no sistema.</div>
+{% endif %}
+
+<!-- ✅ Botões visíveis somente com empresa válida -->
+{% if empresa and empresa.slug %}
+<div class="row g-4 justify-content-center">
+
+    <!-- 🔷 Relatório por Fator -->
+    <div class="col-md-6">
+        <div class="border rounded shadow-sm p-4 bg-white bg-opacity-75 h-100 text-center">
+            <i class="bi bi-pie-chart fs-1 text-primary"></i>
+            <h5 class="mt-3 fw-semibold">Relatório por Fator de Risco</h5>
+            <p class="text-muted mb-3">
+                Classificação psicossocial com base nos 18 fatores e ações recomendadas.
+            </p>
+            <a href="{% url 'relatorios:relatorio_fator' slug=empresa.slug %}"
+               class="btn btn-outline-primary btn-sm w-100"
+               target="_blank" rel="noopener">
+                <i class="bi bi-download"></i> Baixar PDF
+            </a>
+        </div>
+    </div>
+
+    <!-- 🟩 Diagnóstico Psicossocial -->
+    <div class="col-md-6">
+        <div class="border rounded shadow-sm p-4 bg-white bg-opacity-75 h-100 text-center">
+            <i class="bi bi-file-earmark-text fs-1 text-success"></i>
+            <h5 class="mt-3 fw-semibold">Diagnóstico Riscos Psicossociais</h5>
+            <p class="text-muted mb-3">
+                Relatório técnico com setores, fatores críticos e ações recomendadas.
+            </p>
+            <a href="{% url 'relatorios:relatorio_diagnostico' slug=empresa.slug %}"
+               class="btn btn-success btn-sm w-100"
+               target="_blank" rel="noopener">
+                <i class="bi bi-file-earmark-pdf"></i> Baixar PDF
+            </a>
+        </div>
+    </div>
+
+</div>
+{% endif %}
+
+<!-- ⚙️ Rodapé -->
+<hr class="my-5">
+<div class="text-center text-muted">
+    <small>© {% now "Y" %} <strong>CLINISEG</strong> – Medicina e Segurança do Trabalho</small>
+</div>
+{% endblock %}

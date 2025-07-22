@@ -1,0 +1,14 @@
+{% extends 'base_painel.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 style="color: #b30000; margin-bottom: 20px;">📌 Visão Geral</h2>
+    <p style="font-size: 18px;">
+        Bem-vindo ao painel da <strong>CLINISEG</strong>! Escolha uma das opções acima para gerenciar os dados, gerar relatórios ou configurar o sistema.
+    </p>
+    <hr>
+    <p><strong>Usuário logado:</strong> {{ usuario.nome_completo }} ({{ usuario.email }})</p>
+    <p><strong>Cargo:</strong> {{ usuario.cargo }}</p>
+</div>
+{% endblock %}

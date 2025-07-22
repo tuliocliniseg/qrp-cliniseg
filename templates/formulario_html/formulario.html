@@ -1,0 +1,232 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Questionário QRP - {{ empresa.nome }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background: linear-gradient(to right, #e3f2fd, #ffffff);
+            padding: 30px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 14px;
+            box-shadow: 0 0 18px rgba(0,0,0,0.15);
+        }
+        h1, h2 {
+            text-align: center;
+            color: #003366;
+            margin-bottom: 5px;
+        }
+        .logo {
+            display: block;
+            margin: 25px auto;
+            max-width: 160px;
+        }
+        .introducao {
+            background-color: #eef4fa;
+            padding: 20px;
+            border-left: 5px solid #1c5aa6;
+            font-size: 15px;
+            text-align: justify;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+        .form-flex {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .form-column {
+            flex: 1;
+            min-width: 240px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            font-size: 15px;
+            margin-bottom: 10px;
+        }
+        .radio-group label {
+            font-weight: normal;
+            display: block;
+            margin-bottom: 6px;
+            cursor: pointer;
+        }
+        .pergunta {
+            margin: 30px auto 0 auto;
+            padding: 25px 25px 20px;
+            background: #fefefe;
+            border-radius: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            display: none; /* todas ocultas inicialmente */
+            width: 90%;
+            max-width: 900px;
+        }
+        .pergunta label {
+            font-weight: bold;
+            color: #1a1a1a;
+        }
+        .pergunta p {
+            font-size: 16px;
+            margin: 10px 0 15px;
+            color: #333;
+        }
+        .contador {
+            font-size: 13px;
+            color: #444;
+            margin-top: 14px;
+            font-style: italic;
+        }
+        input[type="radio"] {
+            margin-right: 6px;
+        }
+        button {
+            margin: 50px auto 0 auto;
+            display: none; /* só aparece no final */
+            padding: 14px 28px;
+            font-size: 16px;
+            background: #003366;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #005599;
+        }
+        .radio-horizontal {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .radio-horizontal label {
+            display: flex;
+            align-items: center;
+            font-weight: normal;
+            gap: 5px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <img src="{% static 'logo_cliniseg.png' %}" class="logo" alt="Logo">
+    <h1>Questionário de Riscos Psicossociais</h1>
+    <h2>{{ empresa.nome }}</h2>
+    <div class="introducao">
+        <p><strong>Instruções:</strong></p>
+        <p>Este <strong>Questionário de Riscos Psicossociais (QRP)</strong> foi elaborado com base na metodologia do <strong>Health and Safety Executive (HSE)</strong> do Reino Unido.</p>
+        <p>Seu objetivo é identificar fatores organizacionais, relacionais, emocionais e estruturais que impactam a saúde mental e o bem-estar no trabalho.</p>
+        <p><strong>Importante:</strong></p>
+        <ul>
+            <li>As respostas são anônimas e confidenciais.</li>
+            <li>Responda conforme sua vivência real no trabalho.</li>
+            <li>Use a escala de 1 a 5 para indicar a frequência de cada situação.</li>
+        </ul>
+    </div>
+    <form method="POST" id="form-questionario" novalidate>
+        {% csrf_token %}
+        <div style="max-width: 900px; margin: 0 auto;">
+            <div class="form-flex">
+                <div class="form-column">
+                    <label>Setor:</label>
+                    <div class="radio-group" id="grupo-setor">
+                        {% if empresa.setores.all %}
+                            {% for setor in empresa.setores.all %}
+                                <label>
+                                    <input type="radio" name="setor" value="{{ setor.nome_setor }}" required onchange="verificarInicio()">
+                                    {{ setor.nome_setor }}
+                                </label>
+                            {% endfor %}
+                        {% else %}
+                            <p style="color: red;"><strong>⚠ Nenhum setor cadastrado para esta empresa.</strong></p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="form-column">
+                    <label>Sexo:</label>
+                    <div class="radio-group" id="grupo-sexo">
+                        <label><input type="radio" name="sexo" value="Masculino" required onchange="verificarInicio()"> Masculino</label>
+                        <label><input type="radio" name="sexo" value="Feminino" required onchange="verificarInicio()"> Feminino</label>
+                        <label><input type="radio" name="sexo" value="Outro" required onchange="verificarInicio()"> Outro</label>
+                    </div>
+                </div>
+                <div class="form-column">
+                    <label>Faixa Etária:</label>
+                    <div class="radio-group" id="grupo-faixa">
+                        <label><input type="radio" name="faixa_etaria" value="Até 25 anos" required onchange="verificarInicio()"> Até 25 anos</label>
+                        <label><input type="radio" name="faixa_etaria" value="26 a 35 anos" required onchange="verificarInicio()"> 26 a 35 anos</label>
+                        <label><input type="radio" name="faixa_etaria" value="36 a 45 anos" required onchange="verificarInicio()"> 36 a 45 anos</label>
+                        <label><input type="radio" name="faixa_etaria" value="Acima de 45 anos" required onchange="verificarInicio()"> Acima de 45 anos</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% for numero, texto in perguntas %}
+            <div class="pergunta" id="pergunta-{{ numero }}">
+                <label for="q{{ numero }}">Afirmação {{ numero }}:</label>
+                <p>{{ texto }}</p>
+                <div class="radio-horizontal">
+                    <label><input type="radio" name="q{{ numero }}" value="1" required onchange="mostrarProximaPergunta({{ numero }})">1 – Nunca</label>
+                    <label><input type="radio" name="q{{ numero }}" value="2" onchange="mostrarProximaPergunta({{ numero }})">2 – Raramente</label>
+                    <label><input type="radio" name="q{{ numero }}" value="3" onchange="mostrarProximaPergunta({{ numero }})">3 – Às vezes</label>
+                    <label><input type="radio" name="q{{ numero }}" value="4" onchange="mostrarProximaPergunta({{ numero }})">4 – Frequentemente</label>
+                    <label><input type="radio" name="q{{ numero }}" value="5" onchange="mostrarProximaPergunta({{ numero }})">5 – Sempre</label>
+                </div>
+                <div class="contador" id="contador-{{ numero }}"></div>
+            </div>
+        {% endfor %}
+        <button type="submit" id="btn-finalizar">Enviar Respostas</button>
+    </form>
+</div>
+
+<script>
+    const totalQuestoes = {{ perguntas|length }};
+    const respondidas = new Set();
+
+    function verificarInicio() {
+        const setor = document.querySelector('input[name="setor"]:checked');
+        const sexo = document.querySelector('input[name="sexo"]:checked');
+        const faixa = document.querySelector('input[name="faixa_etaria"]:checked');
+        const primeira = document.getElementById("pergunta-1");
+
+        if (setor && sexo && faixa && primeira) {
+            primeira.style.display = "block";
+            atualizarContador(1);
+        }
+    }
+
+    function mostrarProximaPergunta(atual) {
+        respondidas.add(atual);
+        const proxima = document.getElementById('pergunta-' + (atual + 1));
+        const botao = document.getElementById('btn-finalizar');
+
+        if (proxima) {
+            proxima.style.display = 'block';
+            atualizarContador(atual + 1);
+        } else {
+            botao.style.display = 'block';
+        }
+    }
+
+    function atualizarContador(numero) {
+        const faltam = totalQuestoes - respondidas.size;
+        const contador = document.getElementById('contador-' + numero);
+        if (contador) {
+            contador.textContent = `Faltam ${faltam} questões para concluir o questionário.`;
+        }
+    }
+</script>
+</body>
+</html>

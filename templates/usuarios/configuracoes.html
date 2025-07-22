@@ -1,0 +1,43 @@
+{% extends 'base_painel.html' %}
+{% load static %}
+
+{% block content %}
+<h2>⚙️ Configurações do Sistema</h2>
+<p>Ajuste parâmetros do sistema, edite perguntas do questionário, gerencie ações por fator de risco e personalize a aplicação.</p>
+
+<hr>
+<h3>Recursos disponíveis:</h3>
+<ul>
+    <li>⚙️ Editar perguntas do QRP</li>
+    <li>⚙️ Modificar ações recomendadas por fator</li>
+    <li>⚙️ Gerenciar parâmetros gerais da aplicação</li>
+    <li>⚙️ Atualizar informações institucionais da CLINISEG</li>
+</ul>
+
+<p style="margin-top: 20px;"><strong>Usuário logado:</strong> {{ usuario.nome_completo }} ({{ usuario.email }})</p>
+{% if usuario.cargo %}
+<p><strong>Cargo:</strong> {{ usuario.cargo }}</p>
+{% else %}
+<p><strong>Cargo:</strong> Não informado</p>
+{% endif %}
+
+<hr class="my-4">
+
+<div class="row g-4 text-center">
+    <div class="col-md-4 d-grid">
+        <a href="{% url 'painel:listar_perguntas' %}" class="btn btn-outline-primary btn-lg shadow-sm">
+            <i class="bi bi-question-circle"></i> Editar Perguntas do QRP
+        </a>
+    </div>
+    <div class="col-md-4 d-grid">
+        <a href="{% url 'painel:listar_fatores' %}" class="btn btn-outline-secondary btn-lg shadow-sm">
+            <i class="bi bi-tools"></i> Modificar Ações por Fator
+        </a>
+    </div>
+    <div class="col-md-4 d-grid">
+        <a href="{% url 'usuarios:editar_perfil' %}" class="btn btn-outline-warning btn-lg shadow-sm">
+            <i class="bi bi-person-gear"></i> Editar Perfil
+        </a>
+    </div>
+</div>
+{% endblock %}

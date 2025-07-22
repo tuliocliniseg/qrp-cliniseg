@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Gerenciar Usuários | CLINISEG{% endblock %}
+
+{% block content %}
+<h2><i class="bi bi-people-fill"></i> Gerenciar Usuários</h2>
+<p class="text-muted">Somente superadministradores têm acesso a esta área.</p>
+
+<table class="table table-bordered table-hover mt-3">
+    <thead class="table-light">
+        <tr>
+            <th>Nome</th>
+            <th>E-mail</th>
+            <th>Superadmin</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for u in usuarios %}
+        <tr>
+            <td>{{ u.nome_completo }}</td>
+            <td>{{ u.email }}</td>
+            <td>
+                {% if u.is_superuser %}
+                    <span class="badge bg-success">Sim</span>
+                {% else %}
+                    <span class="badge bg-secondary">Não</span>
+                {% endif %}
+            </td>
+            <td>
+                <a href="{% url 'usuarios:editar_usuario' u.id %}" class="btn btn-sm btn-primary">Editar</a>
+                {% if user.id != u.id %}
+                    <a href="{% url 'usuarios:excluir_usuario' u.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza?')">Excluir</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a href="{% url 'painel:painel_aba' aba='configuracoes' %}" class="btn btn-secondary mt-3">Voltar</a>
+{% endblock %}

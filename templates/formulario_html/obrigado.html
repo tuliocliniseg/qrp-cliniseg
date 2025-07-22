@@ -1,0 +1,84 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Obrigado pela Participação</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 80px auto;
+            background-color: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        h1 {
+            color: #003366;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 18px;
+            color: #333;
+        }
+
+        .mensagem {
+            margin-top: 30px;
+            font-size: 20px;
+            color: #0077cc;
+            font-weight: bold;
+        }
+
+        .logo {
+            margin-bottom: 30px;
+        }
+
+        .logo img {
+            max-height: 100px;
+        }
+
+        /* Botão removido conforme orientação de segurança */
+        /* .btn-voltar {
+            display: inline-block;
+            margin-top: 40px;
+            padding: 12px 25px;
+            background-color: #003366;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .btn-voltar:hover {
+            background-color: #005599;
+        } */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <img src="{% static 'logo_cliniseg.png' %}" alt="CLINISEG">
+        </div>
+
+        <h1>✅ Questionário Concluído!</h1>
+        <p>Sua participação foi registrada com sucesso.</p>
+
+        <div class="mensagem">
+            Obrigado pela sua contribuição! Sua saúde é nossa única preocupação.
+        </div>
+
+        <!-- Botão de voltar removido para impedir acesso ao painel administrativo -->
+    </div>
+</body>
+</html>

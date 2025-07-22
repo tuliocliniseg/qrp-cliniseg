@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Empresa{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4"><i class="bi bi-pencil-square"></i> Editar Empresa</h2>
+
+    <form method="POST" novalidate>
+        {% csrf_token %}
+
+        <!-- Nome -->
+        <div class="mb-3">
+            <label class="form-label" for="nome">Nome da empresa</label>
+            <input type="text" id="nome" name="nome" class="form-control" value="{{ empresa.nome }}" required>
+        </div>
+
+        <!-- CNPJ -->
+        <div class="mb-3">
+            <label class="form-label" for="cnpj">CNPJ</label>
+            <input type="text" id="cnpj" name="cnpj" class="form-control" value="{{ empresa.cnpj }}" required pattern="\d{14}">
+            <div class="form-text">Informe o CNPJ apenas com números (14 dígitos).</div>
+        </div>
+
+        <!-- Slug -->
+        <div class="mb-3">
+            <label class="form-label" for="slug">Identificador (slug)</label>
+            <input type="text" id="slug" name="slug" class="form-control" value="{{ empresa.slug }}" required pattern="^[a-z0-9-]+$" 
+                title="Use apenas letras minúsculas, números e hífens">
+        </div>
+
+        <!-- Setores -->
+        <div class="mb-3">
+            <h5 class="text-dark"><i class="bi bi-diagram-3"></i> Setores da Empresa</h5>
+            <div id="setores" class="mb-3">
+                {% for setor in empresa.setores.all %}
+                    <div class="row mb-2 align-items-end setor-item">
+                        <div class="col-md-6">
+                            <input type="text" name="setores[]" class="form-control" value="{{ setor.nome_setor }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="number" name="num_funcionarios[]" class="form-control" value="{{ setor.num_funcionarios }}" min="0" required>
+                        </div>
+                        <div class="col-md-2 text-end">
+                            <button type="button" class="btn btn-outline-danger btn-sm" onclick="removerSetor(this)" title="Remover setor">
+                                <i class="bi bi-x-circle"></i>
+                            </button>
+                        </div>
+                    </div>
+                {% empty %}
+                    <!-- Caso não tenha nenhum setor cadastrado, exibe um setor em branco -->
+                    <div class="row mb-2 align-items-end setor-item">
+                        <div class="col-md-6">
+                            <input type="text" name="setores[]" class="form-control" placeholder="Nome do setor" required>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="number" name="num_funcionarios[]" class="form-control" placeholder="Funcionários" min="0" required>
+                        </div>
+                        <div class="col-md-2 text-end">
+                            <button type="button" class="btn btn-outline-danger btn-sm" onclick="removerSetor(this)" title="Remover setor">
+                                <i class="bi bi-x-circle"></i>
+                            </button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <button type="button" class="btn btn-outline-primary btn-sm" onclick="adicionarSetor()">
+                <i class="bi bi-plus-circle"></i> Adicionar Setor
+            </button>
+        </div>
+
+        <!-- Ações -->
+        <div class="d-flex justify-content-between mt-4">
+            <a href="{% url 'empresas:listar_empresas' %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Voltar
+            </a>
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-save"></i> Salvar Alterações
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Scripts para adicionar e remover setores dinamicamente -->
+<script>
+function adicionarSetor() {
+    const container = document.getElementById("setores");
+    const novoSetor = document.createElement("div");
+    novoSetor.className = "row mb-2 align-items-end setor-item";
+    novoSetor.innerHTML = `
+        <div class="col-md-6">
+            <input type="text" name="setores[]" class="form-control" placeholder="Nome do setor" required>
+        </div>
+        <div class="col-md-4">
+            <input type="number" name="num_funcionarios[]" class="form-control" placeholder="Funcionários" min="0" required>
+        </div>
+        <div class="col-md-2 text-end">
+            <button type="button" class="btn btn-outline-danger btn-sm" onclick="removerSetor(this)" title="Remover setor">
+                <i class="bi bi-x-circle"></i>
+            </button>
+        </div>`;
+    container.appendChild(novoSetor);
+}
+
+function removerSetor(botao) {
+    const setores = document.querySelectorAll(".setor-item");
+    if (setores.length > 1) {
+        botao.closest(".setor-item").remove();
+    } else {
+        alert("A empresa deve ter pelo menos um setor.");
+    }
+}
+</script>
+{% endblock %}

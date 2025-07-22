@@ -1,0 +1,23 @@
+{% extends 'base_painel.html' %}
+
+{% block content %}
+    {% if aba == 'inicio' %}
+        <h2>📌 Visão Geral</h2>
+        <p>Bem-vindo ao painel da <strong>CLINISEG</strong>! Escolha uma das opções acima para gerenciar os dados, gerar relatórios ou configurar o sistema.</p>
+
+    {% elif aba == 'dados' %}
+        <h2>📂 Gerenciamento de Dados</h2>
+        <p>Aqui você poderá visualizar ou editar os dados de empresas, setores e colaboradores.</p>
+
+    {% elif aba == 'relatorios' %}
+        <h2>📑 Relatórios Técnicos</h2>
+        <p>Gere relatórios por fator de risco, setor ou empresa conforme os dados preenchidos.</p>
+
+    {% elif aba == 'configuracoes' %}
+        <h2>⚙️ Configurações do Sistema</h2>
+        <p>Ajustes de permissões, ações recomendadas, perguntas e integrações.</p>
+
+    {% else %}
+        <p class="text-danger fw-bold">Seção inválida.</p>
+    {% endif %}
+{% endblock %}

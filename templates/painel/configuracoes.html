@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Configurações da Conta | CLINISEG{% endblock %}
+
+{% block content %}
+<div class="text-center mb-4">
+    <img src="{% static 'img/logo_cliniseg.png' %}" class="mb-3" style="max-height: 80px;" alt="CLINISEG">
+    <h2><i class="bi bi-sliders"></i> Configurações do Sistema</h2>
+    <p class="text-muted">Gerencie dados do seu usuário, senha de acesso e preferências do sistema.</p>
+</div>
+
+<div class="row g-4 text-center">
+    <div class="col-md-4 d-grid">
+        <a href="{% url 'usuarios:editar_perfil' %}" class="btn btn-outline-primary btn-lg shadow-sm">
+            <i class="bi bi-person-gear"></i> Editar Perfil
+        </a>
+    </div>
+    <div class="col-md-4 d-grid">
+        <a href="{% url 'usuarios:alterar_senha' %}" class="btn btn-outline-warning btn-lg shadow-sm">
+            <i class="bi bi-key"></i> Alterar Senha
+        </a>
+    </div>
+    <div class="col-md-4 d-grid">
+        <a href="{% url 'usuarios:logout' %}" class="btn btn-outline-danger btn-lg shadow-sm">
+            <i class="bi bi-box-arrow-right"></i> Sair do Sistema
+        </a>
+    </div>
+</div>
+
+<hr class="my-5">
+
+<!-- 🔍 Logs de usuário -->
+<div class="text-center mb-5">
+    <a href="{% url 'usuarios:logs_usuarios' %}" class="btn btn-outline-dark btn-lg shadow-sm">
+        <i class="bi bi-journal-text"></i> Ver Logs de Ações Administrativas
+    </a>
+</div>
+
+<!-- 🔧 Preferências futuras -->
+<h4 class="text-center text-muted mb-3"><i class="bi bi-gear-wide-connected"></i> Preferências Futuras</h4>
+<ul class="list-group shadow-sm">
+    <li class="list-group-item">
+        <i class="bi bi-palette text-secondary me-2"></i> Personalização visual do painel
+    </li>
+    <li class="list-group-item">
+        <i class="bi bi-bell text-secondary me-2"></i> Notificações e lembretes automáticos
+    </li>
+    <li class="list-group-item">
+        <i class="bi bi-shield-lock text-secondary me-2"></i> Segurança e permissões de acesso
+    </li>
+</ul>
+
+<hr class="my-5">
+<div class="text-center text-muted">
+    <small>© {% now "Y" %} CLINISEG – Medicina e Segurança do Trabalho</small>
+</div>
+{% endblock %}

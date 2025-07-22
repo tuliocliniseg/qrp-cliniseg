@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Editar Perfil | CLINISEG{% endblock %}
+
+{% block content %}
+<img src="{% static 'img/logo_cliniseg.png' %}" class="d-block mx-auto mb-3" style="max-height: 80px;" alt="CLINISEG">
+<h2>Editar Perfil</h2>
+
+<form method="post" class="row g-3">
+    {% csrf_token %}
+    
+    <div class="col-md-6">
+        <label for="nome" class="form-label">Nome completo</label>
+        <input type="text" class="form-control" id="nome" name="nome" value="{{ usuario.nome_completo }}" required>
+    </div>
+
+    <div class="col-md-6">
+        <label for="email" class="form-label">E-mail</label>
+        <input type="email" class="form-control" id="email" name="email" value="{{ usuario.email }}" required>
+    </div>
+
+    <div class="col-12">
+        <button type="submit" class="btn btn-success">Salvar Alterações</button>
+        <a href="{% url 'painel:painel_aba' aba='configuracoes' %}" class="btn btn-secondary">Voltar</a>
+    </div>
+</form>
+
+{% if messages %}
+    <div class="mt-3">
+        {% for msg in messages %}
+            <div class="alert alert-{{ msg.tags }}">{{ msg }}</div>
+        {% endfor %}
+    </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Cadastro de Usuário | CLINISEG{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-md-10 col-sm-12">
+
+      <img src="{% static 'img/logo_cliniseg.png' %}" class="d-block mx-auto mb-3" style="max-height: 80px;" alt="CLINISEG">
+      <h2 class="text-center mb-4">Cadastrar Novo Usuário</h2>
+
+      <form method="post" class="row g-3" novalidate>
+          {% csrf_token %}
+
+          <div class="col-md-6">
+              <label for="nome" class="form-label">Nome completo</label>
+              <input type="text" class="form-control" id="nome" name="nome" required>
+          </div>
+
+          <div class="col-md-6">
+              <label for="username" class="form-label">Usuário</label>
+              <input type="text" class="form-control" id="username" name="username" required>
+          </div>
+
+          <div class="col-md-6">
+              <label for="email" class="form-label">E-mail</label>
+              <input type="email" class="form-control" id="email" name="email" required>
+          </div>
+
+          <div class="col-md-6">
+              <label for="senha" class="form-label">Senha</label>
+              <input type="password" class="form-control" id="senha" name="senha" required>
+          </div>
+
+          <div class="col-md-6">
+              <label for="confirmar" class="form-label">Confirmar Senha</label>
+              <input type="password" class="form-control" id="confirmar" name="confirmar" required>
+          </div>
+
+          <div class="col-12 mt-3 d-flex gap-2">
+              <button type="submit" class="btn btn-success">Cadastrar</button>
+              <a href="{% url 'usuarios:login' %}" class="btn btn-secondary">Voltar ao Login</a>
+          </div>
+      </form>
+
+      {% if messages %}
+          <div class="mt-4">
+              {% for msg in messages %}
+                  <div class="alert alert-{{ msg.tags }}">{{ msg }}</div>
+              {% endfor %}
+          </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+{% endblock %}

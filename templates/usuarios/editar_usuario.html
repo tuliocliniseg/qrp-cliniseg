@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Editar Usuário | CLINISEG{% endblock %}
+
+{% block content %}
+<h2>Editar Usuário</h2>
+
+<form method="post" class="row g-3">
+    {% csrf_token %}
+    <div class="col-md-6">
+        <label for="nome" class="form-label">Nome completo</label>
+        <input type="text" class="form-control" id="nome" name="nome" value="{{ usuario.nome_completo }}" required>
+    </div>
+
+    <div class="col-md-6">
+        <label for="email" class="form-label">E-mail</label>
+        <input type="email" class="form-control" id="email" name="email" value="{{ usuario.email }}" required>
+    </div>
+
+    <div class="col-12">
+        <div class="form-check mt-2">
+            <input class="form-check-input" type="checkbox" id="is_superuser" name="is_superuser" {% if usuario.is_superuser %}checked{% endif %}>
+            <label class="form-check-label" for="is_superuser">
+                Conceder permissões de superadministrador
+            </label>
+        </div>
+    </div>
+
+    <div class="col-12 mt-3">
+        <button type="submit" class="btn btn-success">Salvar</button>
+        <a href="{% url 'usuarios:gerenciar_usuarios' %}" class="btn btn-secondary">Cancelar</a>
+    </div>
+</form>
+{% endblock %}

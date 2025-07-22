@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Painel CLINISEG - Início{% endblock %}
+
+{% block content %}
+<div class="text-center mb-4">
+    <img src="{% static 'img/logo_cliniseg.png' %}" style="max-height: 80px;" alt="Logo CLINISEG" class="mb-3">
+    <!-- Aqui usamos nome_completo, pois first_name não existe -->
+    <h4 class="fw-bold text-primary">Bem-vindo(a), {{ usuario.nome_completo|default:"Usuário" }}</h4>
+    <p class="text-muted mb-0">Você está autenticado como <strong>{{ usuario.email }}</strong></p>
+</div>
+
+<h2 class="text-center text-dark mt-4 mb-2">
+    <i class="bi bi-speedometer2"></i> Painel Administrativo
+</h2>
+<p class="lead text-center mb-5">
+    Acompanhe o funcionamento do sistema <strong>QRP CLINISEG</strong> e acesse ferramentas essenciais.
+</p>
+
+<div class="row text-center g-4">
+    <!-- Empresas -->
+    <div class="col-md-3">
+        <div class="border rounded p-4 shadow-sm bg-white bg-opacity-75 h-100">
+            <i class="bi bi-building fs-1 text-primary"></i>
+            <h5 class="mt-3 fw-semibold">Empresas</h5>
+            <p class="text-muted mb-3">Gerencie empresas e seus setores vinculados.</p>
+            <a href="{% url 'empresas:listar_empresas' %}" class="btn btn-outline-primary btn-sm w-100">
+                <i class="bi bi-eye"></i> Ver empresas
+            </a>
+        </div>
+    </div>
+
+    <!-- Relatórios -->
+    <div class="col-md-3">
+        <div class="border rounded p-4 shadow-sm bg-white bg-opacity-75 h-100">
+            <i class="bi bi-bar-chart-line fs-1 text-success"></i>
+            <h5 class="mt-3 fw-semibold">Relatórios</h5>
+            <p class="text-muted mb-3">Visualize relatórios com análise por fator e setor.</p>
+            <a href="{% url 'painel:painel_aba' aba='relatorios' %}" class="btn btn-outline-success btn-sm w-100">
+                <i class="bi bi-graph-up"></i> Ver relatórios
+            </a>
+        </div>
+    </div>
+
+    <!-- Editar Perguntas -->
+    <div class="col-md-3">
+        <div class="border rounded p-4 shadow-sm bg-white bg-opacity-75 h-100">
+            <i class="bi bi-question-circle fs-1 text-primary"></i>
+            <h5 class="mt-3 fw-semibold">Editar Perguntas</h5>
+            <p class="text-muted mb-3">Gerencie as perguntas do QRP.</p>
+            <a href="{% url 'painel:listar_perguntas' %}" class="btn btn-outline-primary btn-sm w-100">
+                <i class="bi bi-pencil-square"></i> Editar perguntas
+            </a>
+        </div>
+    </div>
+
+    <!-- Modificar Ações -->
+    <div class="col-md-3">
+        <div class="border rounded p-4 shadow-sm bg-white bg-opacity-75 h-100">
+            <i class="bi bi-tools fs-1 text-secondary"></i>
+            <h5 class="mt-3 fw-semibold">Modificar Ações</h5>
+            <p class="text-muted mb-3">Atualize ações por fator.</p>
+            <a href="{% url 'painel:listar_fatores' %}" class="btn btn-outline-secondary btn-sm w-100">
+                <i class="bi bi-wrench"></i> Modificar ações
+            </a>
+        </div>
+    </div>
+
+    <!-- Configurações -->
+    <div class="col-md-3">
+        <div class="border rounded p-4 shadow-sm bg-white bg-opacity-75 h-100">
+            <i class="bi bi-gear fs-1 text-secondary"></i>
+            <h5 class="mt-3 fw-semibold">Configurações</h5>
+            <p class="text-muted mb-3">Personalize opções do sistema QRP CLINISEG.</p>
+            <a href="{% url 'painel:painel_aba' aba='configuracoes' %}" class="btn btn-outline-secondary btn-sm w-100">
+                <i class="bi bi-sliders"></i> Configurar
+            </a>
+        </div>
+    </div>
+
+    <!-- Logs -->
+    <div class="col-md-3">
+        <div class="border rounded p-4 shadow-sm bg-white bg-opacity-75 h-100">
+            <i class="bi bi-clipboard-data fs-1 text-dark"></i>
+            <h5 class="mt-3 fw-semibold">Logs</h5>
+            <p class="text-muted mb-3">Registros de alterações no sistema.</p>
+            <a href="{% url 'painel:logs_usuarios' %}" class="btn btn-outline-dark btn-sm w-100">
+                <i class="bi bi-search"></i> Ver logs
+            </a>
+        </div>
+    </div>
+</div>
+
+<hr class="my-5">
+<div class="text-center text-muted">
+    <small>© {% now "Y" %} <strong>CLINISEG</strong> – Medicina e Segurança do Trabalho</small>
+</div>
+{% endblock %}

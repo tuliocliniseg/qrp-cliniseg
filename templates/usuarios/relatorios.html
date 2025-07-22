@@ -1,0 +1,21 @@
+{% extends 'base_painel.html' %}
+{% load static %}
+
+{% block content %}
+<h2>📄 Relatórios Técnicos</h2>
+<p>Gere relatórios completos por setor, por fator de risco psicossocial ou um diagnóstico geral da empresa.</p>
+
+<hr>
+
+<h3>Tipos de relatórios disponíveis:</h3>
+<ul class="list-group list-group-flush mb-4" style="max-width: 400px;">
+    <li class="list-group-item">📌 Relatório por Fator de Risco</li>
+    <li class="list-group-item">📌 Relatório Consolidado por Setor</li>
+    <li class="list-group-item">📌 Diagnóstico Geral da Empresa</li>
+</ul>
+
+<div>
+    <p><strong>Usuário logado:</strong> {{ usuario.nome_completo }} ({{ usuario.email }})</p>
+    <p><strong>Cargo:</strong> {{ usuario.cargo|default:"Não informado" }}</p>
+</div>
+{% endblock %}

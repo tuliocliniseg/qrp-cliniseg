@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}Editar Ação | CLINISEG{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Editar Ação para o Fator: {{ acao.fator.nome }}</h2>
+
+    <!-- Formulário para editar ação -->
+    <form method="post" novalidate>
+        {% csrf_token %}
+        
+        <div class="mb-3">
+            <label for="{{ form.descricao.id_for_label }}" class="form-label">Descrição</label>
+            {% render_field form.descricao class="form-control" id=form.descricao.id_for_label %}
+            {% if form.descricao.errors %}
+                <div class="text-danger">{{ form.descricao.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="mb-3">
+            <label class="form-label">Classificação</label>
+            <!-- Classificação como texto readonly, sem permitir edição -->
+            <input type="text" readonly class="form-control-plaintext" value="{{ acao.get_classificacao_display }}">
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-save"></i> Salvar
+        </button>
+        <a href="{% url 'painel:editar_fator_acao' acao.fator.id %}" class="btn btn-secondary ms-2">
+            Cancelar
+        </a>
+    </form>
+</div>
+{% endblock %}

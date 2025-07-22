@@ -1,0 +1,51 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel Administrativo - CLINISEG</title>
+    <link rel="shortcut icon" href="{% static 'logo_cliniseg.png' %}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+        }
+        header {
+            background: #003366;
+            color: white;
+            padding: 20px;
+        }
+        nav {
+            background: #004080;
+            padding: 10px;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-right: 20px;
+            font-weight: bold;
+        }
+        .conteudo {
+            padding: 30px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Painel Administrativo - CLINISEG</h1>
+        <p>Bem-vindo, {{ usuario.nome_completo }}</p>
+    </header>
+
+    <nav>
+        <a href="{% url 'painel:painel_aba' aba='inicio' %}">Início</a>
+        <a href="{% url 'painel:painel_aba' aba='dados' %}">Dados</a>
+        <a href="{% url 'painel:painel_aba' aba='relatorios' %}">Relatórios</a>
+        <a href="{% url 'painel:painel_aba' aba='configuracoes' %}">Configurações</a>
+    </nav>
+
+    <div class="conteudo">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>
