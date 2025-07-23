@@ -187,6 +187,7 @@ def gerar_pdf_diagnostico_empresa(df, empresa):
             fator = limpar_texto(linha["Fator"])
             classificacao = limpar_texto(linha["Classificacao"])
             afirmativas = limpar_texto(linha["Afirmativas"])
+            acao = limpar_texto(linha.get("Acao", ""))  # Captura a ação recomendada
 
             pdf.set_font("Arial", "B", 11)
             pdf.multi_cell(0, 8, f"Fator: {fator} - Classificação: {classificacao}")
@@ -195,6 +196,12 @@ def gerar_pdf_diagnostico_empresa(df, empresa):
             pdf.multi_cell(0, 8, limpar_texto("Afirmativas associadas:"))
             for afirmativa in afirmativas.split("\n"):
                 pdf.multi_cell(0, 8, limpar_texto(f"- {afirmativa.strip()}"))
+
+            if acao:
+                pdf.ln(2)
+                pdf.set_font("Arial", "I", 11)
+                pdf.multi_cell(0, 8, f"Ação recomendada:\n{acao}")
+
             pdf.ln(3)
 
     # ✅ TEXTO FINAL DO DIAGNÓSTICO

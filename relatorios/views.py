@@ -5,6 +5,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 from empresas.models import Empresa
 from respostas.models import Resposta
+from painel.models import Acao  # Importar o modelo Acao
 from .services import gerar_pdf_fator_risco, gerar_pdf_diagnostico_empresa, classificar_risco_personalizado
 import pandas as pd
 import logging
@@ -81,12 +82,12 @@ def download_relatorio_diagnostico(request, slug):
         return HttpResponse("Nenhuma resposta encontrada para esta empresa.", status=404)
 
     try:
-        # --- Passo 1: Converter respostas em DataFrame bruto ---
         dados = []
         for resposta in respostas:
             try:
+                # Use o campo correto do número de funcionários da model Setor
                 setor_nome = resposta.setor.nome_setor if resposta.setor else "NÃO INFORMADO"
-                num_funcionarios = resposta.setor.funcionarios if resposta.setor else 0
+                num_funcionarios = resposta.setor.num_funcionarios if resposta.setor else 0
             except Exception:
                 setor_nome = "NÃO INFORMADO"
                 num_funcionarios = 0
@@ -104,8 +105,7 @@ def download_relatorio_diagnostico(request, slug):
 
         df_respostas = pd.DataFrame(dados)
 
-        # --- Passo 2: Preparar agrupamento por setor e fator ---
-        from painel.models import Fator  # importe seu modelo de Fator aqui
+        from painel.models import Fator
 
         fatores = Fator.objects.all().order_by('ordem')
         lista_resultados = []
@@ -123,15 +123,15 @@ def download_relatorio_diagnostico(request, slug):
                 if respostas_fator.empty:
                     continue
 
-                # Média das respostas por colaborador
                 media_colaboradores = respostas_fator.mean(axis=1)
                 pontuacao_final = media_colaboradores.mean() * len(perguntas_fator)
 
-                # Classificação conforme função existente (adapte se quiser)
                 classificacao = classificar_risco_personalizado(pontuacao_final, len(perguntas_fator))
-
-                # Afirmativas (textos das perguntas)
                 afirmativas = "\n".join([p.texto for p in fator.perguntas.all()])
+
+                # Busca a ação recomendada conforme classificação e fator
+                acao_obj = Acao.objects.filter(fator=fator, classificacao=classificacao).first()
+                acao_texto = acao_obj.descricao if acao_obj else ""
 
                 lista_resultados.append({
                     "Setor": setor_nome,
@@ -139,16 +139,15 @@ def download_relatorio_diagnostico(request, slug):
                     "Respostas": num_respostas_setor,
                     "Fator": fator.nome,
                     "Classificacao": classificacao,
-                    "Afirmativas": afirmativas
+                    "Afirmativas": afirmativas,
+                    "Acao": acao_texto  # Inclui a ação recomendada no relatório
                 })
 
-        # --- Passo 3: Criar DataFrame final para o relatório ---
         df_relatorio = pd.DataFrame(lista_resultados)
 
         if df_relatorio.empty:
             return HttpResponse("Nenhum dado válido para gerar o diagnóstico.", status=404)
 
-        # --- Passo 4: Gerar PDF com o DataFrame estruturado ---
         pdf_bytes = gerar_pdf_diagnostico_empresa(df_relatorio, empresa)
 
         response = HttpResponse(pdf_bytes, content_type='application/pdf')
