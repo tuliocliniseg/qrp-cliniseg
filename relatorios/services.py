@@ -17,8 +17,8 @@ def limpar_texto(texto):
              .replace("‘", "'")
              .replace("…", "...")
     )
-    # Remove caracteres que não podem ser codificados em latin-1
-    return texto.encode('latin-1', 'ignore').decode('latin-1')
+    # Usar 'replace' para evitar erros de encoding e substituir caracteres inválidos por '?'
+    return texto.encode('latin-1', 'replace').decode('latin-1')
 
 # 📊 Classificação personalizada com base na quantidade de perguntas
 def classificar_risco_personalizado(pontuacao, num_perguntas):
@@ -139,7 +139,7 @@ def gerar_pdf_fator_risco(df, empresa):
         pdf.set_text_color(0, 0, 0)
 
     buffer = BytesIO()
-    buffer.write(pdf.output(dest='S').encode('latin-1'))
+    buffer.write(pdf.output(dest='S').encode('latin-1'))  # mantém latin-1 aqui
     buffer.seek(0)
     return buffer
 
@@ -152,7 +152,7 @@ def gerar_pdf_diagnostico_empresa(empresa, df):
         pdf.set_font("Arial", "B", 16)
         pdf.cell(0, 10, "Nenhum dado disponível para esta empresa.", ln=True, align="C")
         buffer = BytesIO()
-        buffer.write(pdf.output(dest='S').encode('latin-1'))
+        buffer.write(pdf.output(dest='S').encode('latin-1'))  # mantém latin-1 aqui
         buffer.seek(0)
         return buffer
 
@@ -164,9 +164,8 @@ def gerar_pdf_diagnostico_empresa(empresa, df):
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
 
-    # Inserir logo pequeno no canto superior esquerdo (ajustado para proporção correta)
     try:
-        pdf.image('static/img/logo_cliniseg.png', x=10, y=8, w=20, h=20)  # Tamanho ajustado 20x20 px
+        pdf.image('static/img/logo_cliniseg.png', x=10, y=8, w=20, h=20)
     except RuntimeError:
         pass
 
@@ -174,13 +173,11 @@ def gerar_pdf_diagnostico_empresa(empresa, df):
     pdf.set_font("Arial", "B", 16)
     pdf.cell(0, 10, "Diagnóstico Riscos Psicossociais", ln=True, align="C")
 
-    # Nome da empresa abaixo do título
     pdf.set_font("Arial", "", 14)
     pdf.cell(0, 10, limpar_texto(empresa.nome), ln=True, align="C")
 
     pdf.ln(10)
 
-    # INFORMATIVO inicial em negrito somente no título
     pdf.set_font("Arial", "B", 14)
     texto_titulo_informativo = "INFORMATIVO - Acompanhamento do Questionário de Riscos Psicossociais"
     pdf.cell(0, 10, limpar_texto(texto_titulo_informativo), ln=True)
@@ -232,7 +229,7 @@ def gerar_pdf_diagnostico_empresa(empresa, df):
             })
 
         if not primeiro_setor:
-            pdf.add_page()  # Adiciona página para setores após o primeiro
+            pdf.add_page()
         else:
             primeiro_setor = False
 
@@ -252,7 +249,7 @@ def gerar_pdf_diagnostico_empresa(empresa, df):
                 for q in item["perguntas"]:
                     pdf.multi_cell(0, 7, f"- {limpar_texto(q)}")
                 pdf.set_font("Arial", "I", 11)
-                pdf.set_text_color(0, 0, 139)  # Azul escuro para destacar ação
+                pdf.set_text_color(0, 0, 139)
                 pdf.multi_cell(0, 7, f"Ação recomendada: {limpar_texto(item['acao'])}")
                 pdf.set_text_color(0, 0, 0)
                 pdf.ln(4)
@@ -274,6 +271,6 @@ def gerar_pdf_diagnostico_empresa(empresa, df):
     pdf.multi_cell(0, 7, limpar_texto(texto_final))
 
     buffer = BytesIO()
-    buffer.write(pdf.output(dest='S').encode('latin-1'))
+    buffer.write(pdf.output(dest='S').encode('latin-1'))  # mantém latin-1 para compatibilidade com FPDF
     buffer.seek(0)
     return buffer
