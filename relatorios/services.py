@@ -257,7 +257,7 @@ def gerar_pdf_diagnostico_empresa(empresa, df):
                 pdf.ln(4)
         else:
             pdf.set_font("Arial", "I", 11)
-            pdf.multi_cell(0, 7, limpar_texto("⚠️ Nenhum fator elevado ou crítico. Nenhuma ação imediata recomendada."))
+            pdf.multi_cell(0, 7, limpar_texto(" Nenhum fator elevado ou crítico. Nenhuma ação imediata recomendada."))
             pdf.ln(5)
 
     pdf.ln(10)
