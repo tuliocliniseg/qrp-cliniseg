@@ -149,7 +149,13 @@ def gerar_pdf_diagnostico_empresa(df, empresa):
     pdf = FPDF()
     pdf.add_page()
 
-    # 🔵 Cabeçalho
+    # Definição das cores por classificação (RGB)
+    cores_classificacao = {
+        "Elevado": (255, 165, 0),  # Laranja
+        "Crítico": (255, 0, 0),    # Vermelho
+    }
+
+    # Cabeçalho
     pdf.set_font("Arial", "B", 14)
     pdf.image("static/logo_cliniseg.png", x=10, y=8, w=33)
     pdf.cell(0, 10, limpar_texto("Diagnóstico Riscos Psicossociais"), ln=True, align="C")
@@ -157,7 +163,7 @@ def gerar_pdf_diagnostico_empresa(df, empresa):
     pdf.cell(0, 10, limpar_texto("CLINISEG Medicina e Segurança do Trabalho"), ln=True, align="C")
     pdf.ln(10)
 
-    # ✅ BUSCA DO TEXTO INICIAL SALVO NO BANCO
+    # Texto inicial salvo no banco (se existir)
     try:
         texto_config = TextoDiagnostico.objects.first()
         texto_inicial = limpar_texto(texto_config.texto_inicial.strip()) if texto_config and texto_config.texto_inicial else ""
@@ -172,7 +178,7 @@ def gerar_pdf_diagnostico_empresa(df, empresa):
             pdf.multi_cell(0, 8, limpar_texto(linha))
         pdf.ln(5)
 
-    # 🔵 Diagnóstico por setor
+    # Iteração por setor
     for setor, grupo in df.groupby("Setor"):
         pdf.set_font("Arial", "B", 12)
         pdf.cell(0, 10, limpar_texto(f"Setor: {setor}"), ln=True)
@@ -183,7 +189,6 @@ def gerar_pdf_diagnostico_empresa(df, empresa):
         pdf.cell(0, 8, limpar_texto(f"Nº respostas válidas: {num_resp}"), ln=True)
         pdf.ln(4)
 
-        # Filtra só fatores com classificação Elevado ou Crítico
         fatores_filtrados = grupo[grupo["Classificacao"].isin(["Elevado", "Crítico"])]
 
         if fatores_filtrados.empty:
@@ -196,7 +201,7 @@ def gerar_pdf_diagnostico_empresa(df, empresa):
             fator = limpar_texto(linha["Fator"])
             classificacao = limpar_texto(linha["Classificacao"])
             afirmativas = limpar_texto(linha["Afirmativas"])
-            acao = limpar_texto(linha.get("Acao", ""))  # Captura a ação recomendada
+            acao = limpar_texto(linha.get("Acao", ""))
 
             pdf.set_font("Arial", "B", 11)
             pdf.multi_cell(0, 8, f"Fator: {fator} - Classificação: {classificacao}")
@@ -207,13 +212,16 @@ def gerar_pdf_diagnostico_empresa(df, empresa):
                 pdf.multi_cell(0, 8, limpar_texto(f"- {afirmativa.strip()}"))
 
             if acao:
+                cor = cores_classificacao.get(classificacao, (0, 0, 0))  # Preto padrão
                 pdf.ln(2)
+                pdf.set_text_color(*cor)
                 pdf.set_font("Arial", "I", 11)
                 pdf.multi_cell(0, 8, f"Ação recomendada:\n{acao}")
+                pdf.set_text_color(0, 0, 0)  # Voltar para preto padrão
 
             pdf.ln(3)
 
-    # ✅ TEXTO FINAL DO DIAGNÓSTICO
+    # Texto final salvo no banco (se existir)
     if texto_final:
         pdf.set_font("Arial", "", 11)
         pdf.ln(5)
