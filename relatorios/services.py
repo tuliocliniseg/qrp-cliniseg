@@ -183,7 +183,16 @@ def gerar_pdf_diagnostico_empresa(df, empresa):
         pdf.cell(0, 8, limpar_texto(f"Nº respostas válidas: {num_resp}"), ln=True)
         pdf.ln(4)
 
-        for index, linha in grupo.iterrows():
+        # Filtra só fatores com classificação Elevado ou Crítico
+        fatores_filtrados = grupo[grupo["Classificacao"].isin(["Elevado", "Crítico"])]
+
+        if fatores_filtrados.empty:
+            pdf.set_font("Arial", "I", 11)
+            pdf.cell(0, 8, "Nenhum fator com classificação elevada ou crítica identificado neste setor.", ln=True)
+            pdf.ln(5)
+            continue
+
+        for index, linha in fatores_filtrados.iterrows():
             fator = limpar_texto(linha["Fator"])
             classificacao = limpar_texto(linha["Classificacao"])
             afirmativas = limpar_texto(linha["Afirmativas"])
@@ -193,7 +202,7 @@ def gerar_pdf_diagnostico_empresa(df, empresa):
             pdf.multi_cell(0, 8, f"Fator: {fator} - Classificação: {classificacao}")
 
             pdf.set_font("Arial", "", 11)
-            pdf.multi_cell(0, 8, limpar_texto("Afirmativas associadas:"))
+            pdf.multi_cell(0, 8, "Afirmativas associadas:")
             for afirmativa in afirmativas.split("\n"):
                 pdf.multi_cell(0, 8, limpar_texto(f"- {afirmativa.strip()}"))
 
