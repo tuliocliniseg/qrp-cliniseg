@@ -4,7 +4,7 @@ import pandas as pd
 
 from painel.models import Fator, Acao  # Modelos do banco
 
-# 🧹 Limpeza leve de texto para substituir alguns caracteres especiais por equivalentes simples
+# 🧹 Limpeza de texto para garantir compatibilidade com FPDF e remover caracteres incompatíveis
 def limpar_texto(texto):
     if not isinstance(texto, str):
         texto = str(texto)
@@ -17,7 +17,8 @@ def limpar_texto(texto):
              .replace("‘", "'")
              .replace("…", "...")
     )
-    return texto  # NÃO removemos mais caracteres, fonte DejaVu suporta UTF-8
+    # Remove caracteres que não podem ser codificados em latin-1
+    return texto.encode('latin-1', 'ignore').decode('latin-1')
 
 # 📊 Classificação personalizada com base na quantidade de perguntas
 def classificar_risco_personalizado(pontuacao, num_perguntas):
@@ -44,10 +45,8 @@ def gerar_pdf_fator_risco(df, empresa):
     fatores = Fator.objects.all().order_by('ordem')
 
     pdf = FPDF(orientation='L')
-    pdf.add_font('DejaVu', '', 'static/fonts/DejaVuSans.ttf', uni=True)  # adiciona fonte TTF com suporte Unicode
-    pdf.set_font('DejaVu', '', 12)
     pdf.set_auto_page_break(auto=True, margin=15)
-    pdf.set_title(f"Relatório Psicossocial - {empresa.nome}")
+    pdf.set_title(limpar_texto(f"Relatório Psicossocial - {empresa.nome}"))
 
     cores_classificacao = {
         "Baixo": (0, 176, 80),
@@ -60,12 +59,12 @@ def gerar_pdf_fator_risco(df, empresa):
     for setor in setores:
         setor_df = df[df["setor"] == setor]
         pdf.add_page()
-        pdf.set_font("DejaVu", "B", 14)
-        pdf.cell(0, 10, f"Empresa: {empresa.nome}", ln=True, align="C")
-        pdf.cell(0, 10, f"Setor: {setor}", ln=True, align="C")
+        pdf.set_font("Arial", "B", 14)
+        pdf.cell(0, 10, limpar_texto(f"Empresa: {empresa.nome}"), ln=True, align="C")
+        pdf.cell(0, 10, limpar_texto(f"Setor: {setor}"), ln=True, align="C")
         pdf.ln(5)
 
-        pdf.set_font("DejaVu", "B", 12)
+        pdf.set_font("Arial", "B", 12)
         pdf.cell(0, 10, "Diagnóstico por Fator de Risco Psicossocial", ln=True, align="C")
         pdf.ln(4)
 
@@ -93,11 +92,11 @@ def gerar_pdf_fator_risco(df, empresa):
 
             resultados.append({
                 "n": fator.ordem,
-                "nome": fator.nome,
+                "nome": limpar_texto(fator.nome),
                 "pontuacao": round(pontuacao_final, 2),
                 "max_pontuacao": max_pontuacao,
                 "classificacao": classificacao,
-                "acao": acao_texto
+                "acao": limpar_texto(acao_texto)
             })
 
         col_widths = [10, 90, 35, 40, 120]
@@ -105,7 +104,7 @@ def gerar_pdf_fator_risco(df, empresa):
         page_width = pdf.w - 2 * pdf.l_margin
         x_table_start = (page_width - total_table_width) / 2 + pdf.l_margin
 
-        pdf.set_font("DejaVu", "B", 11)
+        pdf.set_font("Arial", "B", 11)
         pdf.set_xy(x_table_start, pdf.get_y())
         pdf.cell(col_widths[0], 8, "Nº", 1, align='C')
         pdf.cell(col_widths[1], 8, "Fator de Risco", 1)
@@ -114,7 +113,7 @@ def gerar_pdf_fator_risco(df, empresa):
         pdf.cell(col_widths[4], 8, "Ação Recomendada", 1)
         pdf.ln()
 
-        pdf.set_font("DejaVu", "", 10)
+        pdf.set_font("Arial", "", 10)
         line_height = 6
 
         for r in resultados:
@@ -140,7 +139,7 @@ def gerar_pdf_fator_risco(df, empresa):
         pdf.set_text_color(0, 0, 0)
 
     buffer = BytesIO()
-    buffer.write(pdf.output(dest='S').encode('utf-8'))
+    buffer.write(pdf.output(dest='S').encode('latin-1'))
     buffer.seek(0)
     return buffer
 
@@ -149,12 +148,11 @@ def gerar_pdf_fator_risco(df, empresa):
 def gerar_pdf_diagnostico_empresa(empresa, df):
     if df.empty:
         pdf = FPDF()
-        pdf.add_font('DejaVu', '', 'static/fonts/DejaVuSans.ttf', uni=True)
         pdf.add_page()
-        pdf.set_font("DejaVu", "B", 16)
+        pdf.set_font("Arial", "B", 16)
         pdf.cell(0, 10, "Nenhum dado disponível para esta empresa.", ln=True, align="C")
         buffer = BytesIO()
-        buffer.write(pdf.output(dest='S').encode('utf-8'))
+        buffer.write(pdf.output(dest='S').encode('latin-1'))
         buffer.seek(0)
         return buffer
 
@@ -163,10 +161,8 @@ def gerar_pdf_diagnostico_empresa(empresa, df):
     fatores = Fator.objects.all().order_by('ordem')
 
     pdf = FPDF()
-    pdf.add_font('DejaVu', '', 'static/fonts/DejaVuSans.ttf', uni=True)
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
-    pdf.set_font("DejaVu", "B", 16)
 
     # Inserir logo pequeno no canto superior esquerdo (ajustado para proporção correta)
     try:
@@ -175,26 +171,27 @@ def gerar_pdf_diagnostico_empresa(empresa, df):
         pass
 
     pdf.set_title(f"Diagnóstico Riscos Psicossociais - {empresa.nome}")
+    pdf.set_font("Arial", "B", 16)
     pdf.cell(0, 10, "Diagnóstico Riscos Psicossociais", ln=True, align="C")
 
     # Nome da empresa abaixo do título
-    pdf.set_font("DejaVu", "", 14)
-    pdf.cell(0, 10, empresa.nome, ln=True, align="C")
+    pdf.set_font("Arial", "", 14)
+    pdf.cell(0, 10, limpar_texto(empresa.nome), ln=True, align="C")
 
     pdf.ln(10)
 
     # INFORMATIVO inicial em negrito somente no título
-    pdf.set_font("DejaVu", "B", 14)
+    pdf.set_font("Arial", "B", 14)
     texto_titulo_informativo = "INFORMATIVO - Acompanhamento do Questionário de Riscos Psicossociais"
-    pdf.cell(0, 10, texto_titulo_informativo, ln=True)
+    pdf.cell(0, 10, limpar_texto(texto_titulo_informativo), ln=True)
 
-    pdf.set_font("DejaVu", "", 12)
+    pdf.set_font("Arial", "", 12)
     texto_informativo = (
         "Referente ao questionário de avaliação psicossocial aplicado aos colaboradores, informamos que o ano de 2025 está sendo conduzido como fase educativa e preparatória, sem exigência imediata de alteração documental por parte das empresas.\n\n"
         "Entretanto, a partir de 2026, os resultados obtidos passarão a impactar diretamente na elaboração e atualização obrigatória do Programa de Gerenciamento de Riscos (PGR).\n\n"
         "Neste momento, nosso foco é apoiar a empresa com orientações técnicas e sugestões de ações voluntárias, com base nos fatores que indicaram nível de risco elevado na percepção dos colaboradores."
     )
-    pdf.multi_cell(0, 7, texto_informativo)
+    pdf.multi_cell(0, 7, limpar_texto(texto_informativo))
     pdf.ln(10)
 
     primeiro_setor = True
@@ -239,33 +236,33 @@ def gerar_pdf_diagnostico_empresa(empresa, df):
         else:
             primeiro_setor = False
 
-        pdf.set_font("DejaVu", "B", 13)
+        pdf.set_font("Arial", "B", 13)
         pdf.cell(0, 10, f"Setor: {setor}", ln=True)
-        pdf.set_font("DejaVu", "", 12)
+        pdf.set_font("Arial", "", 12)
         pdf.cell(0, 8, f"Nº funcionários: {setor_funcionarios.get(setor, 'N/D')}", ln=True)
         pdf.cell(0, 8, f"Nº respostas válidas: {respostas_validas}", ln=True)
         pdf.ln(5)
 
         if resultados:
             for item in resultados:
-                pdf.set_font("DejaVu", "B", 12)
+                pdf.set_font("Arial", "B", 12)
                 pdf.cell(0, 8, f"Fator: {item['fator']} - Classificação: {item['classificacao']}", ln=True)
-                pdf.set_font("DejaVu", "", 11)
+                pdf.set_font("Arial", "", 11)
                 pdf.multi_cell(0, 7, "Afirmativas associadas:")
                 for q in item["perguntas"]:
-                    pdf.multi_cell(0, 7, f"- {q}")
-                pdf.set_font("DejaVu", "I", 11)
+                    pdf.multi_cell(0, 7, f"- {limpar_texto(q)}")
+                pdf.set_font("Arial", "I", 11)
                 pdf.set_text_color(0, 0, 139)  # Azul escuro para destacar ação
-                pdf.multi_cell(0, 7, f"Ação recomendada: {item['acao']}")
+                pdf.multi_cell(0, 7, f"Ação recomendada: {limpar_texto(item['acao'])}")
                 pdf.set_text_color(0, 0, 0)
                 pdf.ln(4)
         else:
-            pdf.set_font("DejaVu", "I", 11)
+            pdf.set_font("Arial", "I", 11)
             pdf.multi_cell(0, 7, "⚠️ Nenhum fator elevado ou crítico. Nenhuma ação imediata recomendada.")
             pdf.ln(5)
 
     pdf.ln(10)
-    pdf.set_font("DejaVu", "", 12)
+    pdf.set_font("Arial", "", 12)
     texto_final = (
         "Ressaltamos que, até 26 de maio de 2026, a inclusão dos fatores psicossociais possui caráter educativo. Assim, a empresa tem a possibilidade de, ciente dos resultados e das medidas cabíveis, implementar ações corretivas desde já.\n\n"
         "Antecipar-se agora demonstra comprometimento com o bem-estar dos colaboradores e favorece a cultura de segurança organizacional.\n\n"
@@ -274,9 +271,9 @@ def gerar_pdf_diagnostico_empresa(empresa, df):
         "Ficamos no aguardo do seu retorno quanto à forma como desejam proceder.\n\n"
         "Colocamo-nos à disposição para auxiliar a empresa em qualquer etapa de análise ou implementação de melhorias."
     )
-    pdf.multi_cell(0, 7, texto_final)
+    pdf.multi_cell(0, 7, limpar_texto(texto_final))
 
     buffer = BytesIO()
-    buffer.write(pdf.output(dest='S').encode('utf-8'))
+    buffer.write(pdf.output(dest='S').encode('latin-1'))
     buffer.seek(0)
     return buffer
