@@ -17,8 +17,8 @@ def limpar_texto(texto):
              .replace("‘", "'")
              .replace("…", "...")
     )
-    # Remove caracteres que não podem ser codificados em latin-1
-    return texto.encode('latin-1', 'ignore').decode('latin-1')
+    # REMOVIDO o encode('latin-1', 'ignore').decode('latin-1') para preservar UTF-8
+    return texto
 
 # 📊 Classificação personalizada com base na quantidade de perguntas
 def classificar_risco_personalizado(pontuacao, num_perguntas):
@@ -139,7 +139,7 @@ def gerar_pdf_fator_risco(df, empresa):
         pdf.set_text_color(0, 0, 0)
 
     buffer = BytesIO()
-    buffer.write(pdf.output(dest='S').encode('latin-1'))
+    buffer.write(pdf.output(dest='S').encode('utf-8'))  # Troquei para utf-8 aqui
     buffer.seek(0)
     return buffer
 
@@ -152,7 +152,7 @@ def gerar_pdf_diagnostico_empresa(empresa, df):
         pdf.set_font("Arial", "B", 16)
         pdf.cell(0, 10, "Nenhum dado disponível para esta empresa.", ln=True, align="C")
         buffer = BytesIO()
-        buffer.write(pdf.output(dest='S').encode('latin-1'))
+        buffer.write(pdf.output(dest='S').encode('utf-8'))  # Troquei para utf-8 aqui
         buffer.seek(0)
         return buffer
 
@@ -274,6 +274,6 @@ def gerar_pdf_diagnostico_empresa(empresa, df):
     pdf.multi_cell(0, 7, limpar_texto(texto_final))
 
     buffer = BytesIO()
-    buffer.write(pdf.output(dest='S').encode('latin-1'))
+    buffer.write(pdf.output(dest='S').encode('utf-8'))  # Troquei para utf-8 aqui
     buffer.seek(0)
     return buffer
