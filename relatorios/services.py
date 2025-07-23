@@ -17,7 +17,6 @@ def limpar_texto(texto):
              .replace("‘", "'")
              .replace("…", "...")
     )
-    # Troquei 'ignore' por 'replace' para substituir caracteres inválidos e evitar erro
     return texto.encode('latin-1', 'replace').decode('latin-1')
 
 # 📊 Classificação personalizada com base na quantidade de perguntas
@@ -41,7 +40,7 @@ def classificar_risco_personalizado(pontuacao, num_perguntas):
 
 # 📄 Gera o relatório por fator para cada setor
 def gerar_pdf_fator_risco(df, empresa):
-    setores = [setor.nome_setor for setor in empresa.setores.all()]
+    setores = [limpar_texto(setor.nome_setor) for setor in empresa.setores.all()]
     fatores = Fator.objects.all().order_by('ordem')
 
     pdf = FPDF(orientation='L')
@@ -65,7 +64,7 @@ def gerar_pdf_fator_risco(df, empresa):
         pdf.ln(5)
 
         pdf.set_font("Arial", "B", 12)
-        pdf.cell(0, 10, "Diagnóstico por Fator de Risco Psicossocial", ln=True, align="C")
+        pdf.cell(0, 10, limpar_texto("Diagnóstico por Fator de Risco Psicossocial"), ln=True, align="C")
         pdf.ln(4)
 
         resultados = []
@@ -106,11 +105,11 @@ def gerar_pdf_fator_risco(df, empresa):
 
         pdf.set_font("Arial", "B", 11)
         pdf.set_xy(x_table_start, pdf.get_y())
-        pdf.cell(col_widths[0], 8, "Nº", 1, align='C')
-        pdf.cell(col_widths[1], 8, "Fator de Risco", 1)
-        pdf.cell(col_widths[2], 8, "Pontuação", 1, align='C')
-        pdf.cell(col_widths[3], 8, "Classificação", 1, align='C')
-        pdf.cell(col_widths[4], 8, "Ação Recomendada", 1)
+        pdf.cell(col_widths[0], 8, limpar_texto("Nº"), 1, align='C')
+        pdf.cell(col_widths[1], 8, limpar_texto("Fator de Risco"), 1)
+        pdf.cell(col_widths[2], 8, limpar_texto("Pontuação"), 1, align='C')
+        pdf.cell(col_widths[3], 8, limpar_texto("Classificação"), 1, align='C')
+        pdf.cell(col_widths[4], 8, limpar_texto("Ação Recomendada"), 1)
         pdf.ln()
 
         pdf.set_font("Arial", "", 10)
@@ -150,14 +149,14 @@ def gerar_pdf_diagnostico_empresa(empresa, df):
         pdf = FPDF()
         pdf.add_page()
         pdf.set_font("Arial", "B", 16)
-        pdf.cell(0, 10, "Nenhum dado disponível para esta empresa.", ln=True, align="C")
+        pdf.cell(0, 10, limpar_texto("Nenhum dado disponível para esta empresa."), ln=True, align="C")
         buffer = BytesIO()
         buffer.write(pdf.output(dest='S').encode('latin-1'))
         buffer.seek(0)
         return buffer
 
-    setores = df['setor'].unique()
-    setor_funcionarios = {s.nome_setor: s.num_funcionarios for s in empresa.setores.all()}
+    setores = [limpar_texto(s) for s in df['setor'].unique()]
+    setor_funcionarios = {limpar_texto(s.nome_setor): s.num_funcionarios for s in empresa.setores.all()}
     fatores = Fator.objects.all().order_by('ordem')
 
     pdf = FPDF()
@@ -170,9 +169,9 @@ def gerar_pdf_diagnostico_empresa(empresa, df):
     except RuntimeError:
         pass
 
-    pdf.set_title(f"Diagnóstico Riscos Psicossociais - {empresa.nome}")
+    pdf.set_title(limpar_texto(f"Diagnóstico Riscos Psicossociais - {empresa.nome}"))
     pdf.set_font("Arial", "B", 16)
-    pdf.cell(0, 10, "Diagnóstico Riscos Psicossociais", ln=True, align="C")
+    pdf.cell(0, 10, limpar_texto("Diagnóstico Riscos Psicossociais"), ln=True, align="C")
 
     # Nome da empresa abaixo do título
     pdf.set_font("Arial", "", 14)
@@ -237,28 +236,28 @@ def gerar_pdf_diagnostico_empresa(empresa, df):
             primeiro_setor = False
 
         pdf.set_font("Arial", "B", 13)
-        pdf.cell(0, 10, f"Setor: {limpar_texto(setor)}", ln=True)
+        pdf.cell(0, 10, limpar_texto(f"Setor: {setor}"), ln=True)
         pdf.set_font("Arial", "", 12)
-        pdf.cell(0, 8, f"Nº funcionários: {setor_funcionarios.get(setor, 'N/D')}", ln=True)
-        pdf.cell(0, 8, f"Nº respostas válidas: {respostas_validas}", ln=True)
+        pdf.cell(0, 8, limpar_texto(f"Nº funcionários: {setor_funcionarios.get(setor, 'N/D')}"), ln=True)
+        pdf.cell(0, 8, limpar_texto(f"Nº respostas válidas: {respostas_validas}"), ln=True)
         pdf.ln(5)
 
         if resultados:
             for item in resultados:
                 pdf.set_font("Arial", "B", 12)
-                pdf.cell(0, 8, f"Fator: {item['fator']} - Classificação: {item['classificacao']}", ln=True)
+                pdf.cell(0, 8, limpar_texto(f"Fator: {item['fator']} - Classificação: {item['classificacao']}"), ln=True)
                 pdf.set_font("Arial", "", 11)
-                pdf.multi_cell(0, 7, "Afirmativas associadas:")
+                pdf.multi_cell(0, 7, limpar_texto("Afirmativas associadas:"))
                 for q in item["perguntas"]:
-                    pdf.multi_cell(0, 7, f"- {q}")
+                    pdf.multi_cell(0, 7, limpar_texto(f"- {q}"))
                 pdf.set_font("Arial", "I", 11)
                 pdf.set_text_color(0, 0, 139)  # Azul escuro para destacar ação
-                pdf.multi_cell(0, 7, f"Ação recomendada: {item['acao']}")
+                pdf.multi_cell(0, 7, limpar_texto(f"Ação recomendada: {item['acao']}"))
                 pdf.set_text_color(0, 0, 0)
                 pdf.ln(4)
         else:
             pdf.set_font("Arial", "I", 11)
-            pdf.multi_cell(0, 7, "⚠️ Nenhum fator elevado ou crítico. Nenhuma ação imediata recomendada.")
+            pdf.multi_cell(0, 7, limpar_texto("⚠️ Nenhum fator elevado ou crítico. Nenhuma ação imediata recomendada."))
             pdf.ln(5)
 
     pdf.ln(10)
