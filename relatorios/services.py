@@ -2,7 +2,7 @@ from fpdf import FPDF
 from io import BytesIO
 import pandas as pd
 
-from painel.models import Fator, Acao  # Modelos do banco
+from painel.models import Fator, Acao, TextoDiagnostico  # Certifique-se que TextoDiagnostico existe
 
 # 🧹 Limpeza de texto para garantir compatibilidade com FPDF e remover caracteres incompatíveis
 def limpar_texto(texto):
@@ -138,141 +138,74 @@ def gerar_pdf_fator_risco(df, empresa):
         pdf.set_text_color(0, 0, 0)
 
     buffer = BytesIO()
-    buffer.write(pdf.output(dest='S').encode('latin-1'))
+    pdf_data = pdf.output(dest='S').encode('latin-1')
+    buffer.write(pdf_data)
     buffer.seek(0)
     return buffer
 
 
 # 📄 Gera o relatório diagnóstico textual com fatores elevados e críticos
-def gerar_pdf_diagnostico_empresa(empresa, df):
-    if df.empty:
-        pdf = FPDF()
-        pdf.add_page()
-        pdf.set_font("Arial", "B", 16)
-        pdf.cell(0, 10, limpar_texto("Nenhum dado disponível para esta empresa."), ln=True, align="C")
-        buffer = BytesIO()
-        buffer.write(pdf.output(dest='S').encode('latin-1'))
-        buffer.seek(0)
-        return buffer
-
-    setores = [limpar_texto(s) for s in df['setor'].unique()]
-    setor_funcionarios = {limpar_texto(s.nome_setor): s.num_funcionarios for s in empresa.setores.all()}
-    fatores = Fator.objects.all().order_by('ordem')
-
+def gerar_pdf_diagnostico_empresa(df, empresa):
     pdf = FPDF()
-    pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
 
-    # Inserir logo pequeno no canto superior esquerdo (ajustado para proporção correta)
-    try:
-        pdf.image('static/img/logo_cliniseg.png', x=10, y=8, w=20, h=20)  # Tamanho ajustado 20x20 px
-    except RuntimeError:
-        pass
-
-    pdf.set_title(limpar_texto(f"Diagnóstico Riscos Psicossociais - {empresa.nome}"))
-    pdf.set_font("Arial", "B", 16)
-    pdf.cell(0, 10, limpar_texto("Diagnóstico Riscos Psicossociais"), ln=True, align="C")
-
-    # Nome da empresa abaixo do título
-    pdf.set_font("Arial", "", 14)
-    pdf.cell(0, 10, limpar_texto(empresa.nome), ln=True, align="C")
-
-    pdf.ln(10)
-
-    # INFORMATIVO inicial em negrito somente no título
+    # 🔵 Cabeçalho
     pdf.set_font("Arial", "B", 14)
-    texto_titulo_informativo = "INFORMATIVO - Acompanhamento do Questionário de Riscos Psicossociais"
-    pdf.cell(0, 10, limpar_texto(texto_titulo_informativo), ln=True)
-
+    pdf.image("static/logo_cliniseg.png", x=10, y=8, w=33)
+    pdf.cell(0, 10, limpar_texto("Diagnóstico Riscos Psicossociais"), ln=True, align="C")
     pdf.set_font("Arial", "", 12)
-    texto_informativo = (
-        "Referente ao questionário de avaliação psicossocial aplicado aos colaboradores, informamos que o ano de 2025 está sendo conduzido como fase educativa e preparatória, sem exigência imediata de alteração documental por parte das empresas.\n\n"
-        "Entretanto, a partir de 2026, os resultados obtidos passarão a impactar diretamente na elaboração e atualização obrigatória do Programa de Gerenciamento de Riscos (PGR).\n\n"
-        "Neste momento, nosso foco é apoiar a empresa com orientações técnicas e sugestões de ações voluntárias, com base nos fatores que indicaram nível de risco elevado na percepção dos colaboradores."
-    )
-    pdf.multi_cell(0, 7, limpar_texto(texto_informativo))
+    pdf.cell(0, 10, limpar_texto("CLINISEG Medicina e Segurança do Trabalho"), ln=True, align="C")
     pdf.ln(10)
 
-    primeiro_setor = True
-    for setor in setores:
-        setor_df = df[df["setor"] == setor]
-        respostas_validas = len(setor_df)
-        if respostas_validas == 0:
-            continue
+    # ✅ BUSCA DO TEXTO INICIAL SALVO NO BANCO
+    try:
+        texto_config = TextoDiagnostico.objects.first()
+        texto_inicial = limpar_texto(texto_config.texto_inicial.strip()) if texto_config and texto_config.texto_inicial else ""
+        texto_final = limpar_texto(texto_config.texto_final.strip()) if texto_config and texto_config.texto_final else ""
+    except:
+        texto_inicial = ""
+        texto_final = ""
 
-        resultados = []
-        for fator in fatores:
-            perguntas = [p.numero for p in fator.perguntas.all()]
-            colunas = [f'q{n}' for n in perguntas if f'q{n}' in setor_df.columns]
-            if not colunas:
-                continue
-            respostas = setor_df[colunas].dropna()
-            if respostas.empty:
-                continue
-
-            media_individual = respostas.mean(axis=1)
-
-            if callable(getattr(media_individual, "mean", None)):
-                pontuacao_final = float(media_individual.mean()) * len(colunas)
-            else:
-                pontuacao_final = 0
-
-            classificacao = classificar_risco_personalizado(pontuacao_final, len(colunas))
-
-            if classificacao not in ["Elevado", "Crítico"]:
-                continue
-
-            acao = Acao.objects.filter(fator=fator, classificacao=classificacao).first()
-            resultados.append({
-                "fator": limpar_texto(fator.nome),
-                "classificacao": classificacao,
-                "perguntas": [limpar_texto(p.texto) for p in fator.perguntas.all()],
-                "acao": limpar_texto(acao.descricao) if acao else "",
-            })
-
-        if not primeiro_setor:
-            pdf.add_page()  # Adiciona página para setores após o primeiro
-        else:
-            primeiro_setor = False
-
-        pdf.set_font("Arial", "B", 13)
-        pdf.cell(0, 10, limpar_texto(f"Setor: {setor}"), ln=True)
-        pdf.set_font("Arial", "", 12)
-        pdf.cell(0, 8, limpar_texto(f"Nº funcionários: {setor_funcionarios.get(setor, 'N/D')}"), ln=True)
-        pdf.cell(0, 8, limpar_texto(f"Nº respostas válidas: {respostas_validas}"), ln=True)
+    if texto_inicial:
+        pdf.set_font("Arial", "", 11)
+        for linha in texto_inicial.split("\n"):
+            pdf.multi_cell(0, 8, limpar_texto(linha))
         pdf.ln(5)
 
-        if resultados:
-            for item in resultados:
-                pdf.set_font("Arial", "B", 12)
-                pdf.cell(0, 8, limpar_texto(f"Fator: {item['fator']} - Classificação: {item['classificacao']}"), ln=True)
-                pdf.set_font("Arial", "", 11)
-                pdf.multi_cell(0, 7, limpar_texto("Afirmativas associadas:"))
-                for q in item["perguntas"]:
-                    pdf.multi_cell(0, 7, limpar_texto(f"- {q}"))
-                pdf.set_font("Arial", "I", 11)
-                pdf.set_text_color(0, 0, 139)  # Azul escuro para destacar ação
-                pdf.multi_cell(0, 7, limpar_texto(f"Ação recomendada: {item['acao']}"))
-                pdf.set_text_color(0, 0, 0)
-                pdf.ln(4)
-        else:
-            pdf.set_font("Arial", "I", 11)
-            pdf.multi_cell(0, 7, limpar_texto("Nenhum fator de risco elevado ou crítico identificado. Nenhuma ação imediata recomendada!"))
-            pdf.ln(5)
+    # 🔵 Diagnóstico por setor
+    for setor, grupo in df.groupby("Setor"):
+        pdf.set_font("Arial", "B", 12)
+        pdf.cell(0, 10, limpar_texto(f"Setor: {setor}"), ln=True)
+        num_func = grupo["Funcionários"].iloc[0]
+        num_resp = grupo["Respostas"].iloc[0]
+        pdf.set_font("Arial", "", 11)
+        pdf.cell(0, 8, limpar_texto(f"Nº funcionários: {num_func}"), ln=True)
+        pdf.cell(0, 8, limpar_texto(f"Nº respostas válidas: {num_resp}"), ln=True)
+        pdf.ln(4)
 
-    pdf.ln(10)
-    pdf.set_font("Arial", "", 12)
-    texto_final = (
-        "Ressaltamos que, até 26 de maio de 2026, a inclusão dos fatores psicossociais possui caráter educativo. Assim, a empresa tem a possibilidade de, ciente dos resultados e das medidas cabíveis, implementar ações corretivas desde já.\n\n"
-        "Antecipar-se agora demonstra comprometimento com o bem-estar dos colaboradores e favorece a cultura de segurança organizacional.\n\n"
-        "Diante das informações enviadas acima em relação aos riscos psicossociais, você concorda que estão de acordo com a realidade atual da empresa e que estes resultados passarão a ser introduzidos no PGR de 2025?\n\n"
-        "Dessa forma, um novo levantamento será realizado no próximo ano - quando a inclusão será obrigatória -, e apenas os fatores que ainda estiverem presentes no ambiente de trabalho serão incluídos no PGR.\n\n"
-        "Ficamos no aguardo do seu retorno quanto à forma como desejam proceder.\n\n"
-        "Colocamo-nos à disposição para auxiliar a empresa em qualquer etapa de análise ou implementação de melhorias."
-    )
-    pdf.multi_cell(0, 7, limpar_texto(texto_final))
+        for index, linha in grupo.iterrows():
+            fator = limpar_texto(linha["Fator"])
+            classificacao = limpar_texto(linha["Classificacao"])
+            afirmativas = limpar_texto(linha["Afirmativas"])
+
+            pdf.set_font("Arial", "B", 11)
+            pdf.multi_cell(0, 8, f"Fator: {fator} - Classificação: {classificacao}")
+
+            pdf.set_font("Arial", "", 11)
+            pdf.multi_cell(0, 8, limpar_texto("Afirmativas associadas:"))
+            for afirmativa in afirmativas.split("\n"):
+                pdf.multi_cell(0, 8, limpar_texto(f"- {afirmativa.strip()}"))
+            pdf.ln(3)
+
+    # ✅ TEXTO FINAL DO DIAGNÓSTICO
+    if texto_final:
+        pdf.set_font("Arial", "", 11)
+        pdf.ln(5)
+        for linha in texto_final.split("\n"):
+            pdf.multi_cell(0, 8, limpar_texto(linha))
 
     buffer = BytesIO()
-    buffer.write(pdf.output(dest='S').encode('latin-1'))
+    pdf_data = pdf.output(dest='S').encode('latin-1')
+    buffer.write(pdf_data)
     buffer.seek(0)
     return buffer

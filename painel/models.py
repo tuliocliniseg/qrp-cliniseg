@@ -221,3 +221,11 @@ class LogAcao(models.Model):
         executor = self.executado_por.first_name if self.executado_por else "N/A"
         data_formatada = self.data_hora.strftime('%d/%m/%Y %H:%M')
         return f"{executor} executou {self.get_acao_display()} em {alvo} em {data_formatada}"
+
+# Modelo de Texto do Diagnóstico Psicossocial
+class TextoDiagnostico(models.Model):
+    texto_inicial = models.TextField(verbose_name="Texto Inicial do Diagnóstico", default="", blank=True)
+    texto_final = models.TextField(verbose_name="Texto Final do Diagnóstico", default="", blank=True)
+
+    def __str__(self):
+        return "Texto do Diagnóstico Psicossocial"

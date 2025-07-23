@@ -1,5 +1,5 @@
 from django import forms
-from .models import Pergunta, Fator, Acao
+from .models import Pergunta, Fator, Acao, TextoDiagnostico  # ⬅️ Adiciona o novo modelo aqui
 
 class PerguntaForm(forms.ModelForm):
     class Meta:
@@ -24,4 +24,22 @@ class AcaoForm(forms.ModelForm):
         fields = ['descricao']  # Somente descrição editável
         widgets = {
             'descricao': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+        }
+
+# ✅ Novo formulário para editar os blocos de texto do diagnóstico
+class TextoDiagnosticoForm(forms.ModelForm):
+    class Meta:
+        model = TextoDiagnostico
+        fields = ['texto_inicial', 'texto_final']
+        widgets = {
+            'texto_inicial': forms.Textarea(attrs={
+                'rows': 10,
+                'class': 'form-control',
+                'placeholder': 'Texto inicial do diagnóstico...'
+            }),
+            'texto_final': forms.Textarea(attrs={
+                'rows': 12,
+                'class': 'form-control',
+                'placeholder': 'Texto final do diagnóstico...'
+            }),
         }

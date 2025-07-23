@@ -12,10 +12,13 @@ urlpatterns = [
     path('acoes/editar/<int:acao_id>/', views.editar_acao, name='editar_acao'),
     path('logs/', views.logs_usuarios_view, name='logs_usuarios'),
 
-    # Rota sem parâmetro, para painel padrão
+    # ✅ NOVA ROTA: Edição dos textos do diagnóstico
+    path('editar-texto-diagnostico/', views.editar_texto_diagnostico, name='editar_texto_diagnostico'),
+
+    # Rota padrão do painel
     path('', views.painel_view, name='painel'),
 
-    # Rota com parâmetro 'aba' para abas específicas do painel
+    # Rota com aba dinâmica do painel
     path('<str:aba>/', views.painel_view, name='painel_aba'),
 
     path('relatorios/', relatorios_gerenciais, name='relatorios_gerenciais'),

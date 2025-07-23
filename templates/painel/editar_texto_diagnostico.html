@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0">📝 Editar Texto do Diagnóstico Psicossocial</h4>
+    </div>
+    <div class="card-body">
+      <form method="POST">
+        {% csrf_token %}
+
+        <div class="mb-4">
+          <label for="id_texto_inicial" class="form-label">
+            <strong>📄 Bloco Inicial do Diagnóstico</strong>
+          </label>
+          <textarea
+            name="texto_inicial"
+            id="id_texto_inicial"
+            class="form-control"
+            rows="8"
+            required
+          >{{ form.texto_inicial.value|default_if_none:'' }}</textarea>
+        </div>
+
+        <div class="mb-4">
+          <label for="id_texto_final" class="form-label">
+            <strong>📄 Bloco Final do Diagnóstico</strong>
+          </label>
+          <textarea
+            name="texto_final"
+            id="id_texto_final"
+            class="form-control"
+            rows="8"
+            required
+          >{{ form.texto_final.value|default_if_none:'' }}</textarea>
+        </div>
+
+        <button type="submit" class="btn btn-success">
+          💾 Salvar Alterações
+        </button>
+        <a href="{% url 'painel:painel_aba' 'configuracoes' %}" class="btn btn-secondary ms-2">
+          ↩ Voltar
+        </a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

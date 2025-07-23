@@ -1,7 +1,8 @@
 from django.urls import path
 from . import views
 
-app_name = 'relatorios'  # <-- essa linha faltava
+# 🧭 Namespace da aplicação
+app_name = 'relatorios'
 
 urlpatterns = [
     # 🔹 Página principal com seleção de empresa e opções de relatórios
